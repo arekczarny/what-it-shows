@@ -2,7 +2,7 @@
 layout: runbook
 title: '#4471 · split into root causes'
 owner: arek czarny
-status: living
+status: accepted
 reviewed: 2026-10-28
 signature: v1.eyJzdWIiOiIxNDYxIiwiYXVkIjoiY2hhbGxlbmdlOndoYXQtaXQtc2hvd3MiLCJpYXQiOjE3OTMxNjk3MTgsImV4cCI6MTc5MzI1NjExOH0.JL8w0Br__8-0gEnZfxurcmpJqagWY1Y8pO8LYideqmQ
 ---
@@ -15,13 +15,18 @@ signature: v1.eyJzdWIiOiIxNDYxIiwiYXVkIjoiY2hhbGxlbmdlOndoYXQtaXQtc2hvd3MiLCJpYX
   import TicketTable from '#lib/kb/TicketTable.svelte';
 </script>
 
-The desk merged every date-related report into one ticket and marked it known: one parser bug, one fix queued. The export’s own `causes.ts` says otherwise: the cause follows the **tenant locale** and the **booking form**, not the intake tag or the subject line. This page is the split the desk still needs.
+The desk had merged every date-related report into one ticket and marked it known. The export’s own `causes.ts` split those reports into two root causes: the cause follows the **tenant locale** and the **booking form**, not the intake tag or the subject line. Both tickets are now closed. **#4471 closed 05 Oct.**
 
-<Callout kind="warn">
-#4471 holds more than one root cause. Open a ticket per cause below; do not treat the merged ticket as a single fix.
+<Callout>
+Outcomes: <code>parser</code> fixed by <code>fix(dates): parse dd/mm for eu locales</code>. <code>hint</code> won’t fix — booking-v3 form retired.
 </Callout>
 
-## Tickets (one per cause)
+## Tickets (one per cause, both closed)
+
+| cause | outcome | ticket |
+| --- | --- | --- |
+| `parser` | Fixed by `fix(dates): parse dd/mm for eu locales` | [#1](https://github.com/arekczarny/what-it-shows/issues/1) (closed, completed) |
+| `hint` | Won’t fix — booking-v3 form retired | [#2](https://github.com/arekczarny/what-it-shows/issues/2) (closed, not planned) |
 
 <TicketTable
   ticket={4471}
@@ -41,15 +46,15 @@ The desk merged every date-related report into one ticket and marked it known: o
 
 ## How to recognise each cause
 
-**parser** — day-first tenant; channel `app`/`email`, or `form` on booking-v2 (or any non-hint path on booking-v3). Symptom is a month/day swap.
+**parser** — day-first tenant; channel `app`/`email`, or `form` on booking-v2 (or any non-hint path on booking-v3). Symptom is a month/day swap. **Fixed** by `fix(dates): parse dd/mm for eu locales`.
 
-**hint** — day-first tenant; channel **`form`**; form **booking-v3** (hint prints `MM/DD/YYYY`, form reads day-first).
+**hint** — day-first tenant; channel **`form`**; form **booking-v3** (hint prints `MM/DD/YYYY`, form reads day-first). **Won’t fix** — booking-v3 form retired.
 
 **unplaced** — no tenant on file, or the tenant’s locale is month-first. (None expected for this ticket if every report has a day-first tenant.)
 
-## What the desk got wrong
+## What the desk got wrong (before close)
 
-- The incident page for #4471 still says one issue. `CauseTable` above marks every non-owner cause as not this ticket.
+- The incident page for #4471 said one issue. `CauseTable` above marks every non-owner cause as not this ticket.
 - Triage still merges on **subject** ([decision 0001](/kb/decisions/0001-dedupe-by-subject)). Same subject can be different causes (`sameCause` / `DedupeExplorer`). That decision stands as written; this page does not edit it.
 - Reports the desk read as a one-day/timezone move are footnoted under their tenant cause in `CauseTable` (`desk-notes.json` / `readAs`) — not a separate root cause.
 - The queue kept moving after the known page was reviewed: `QueueTimeline` shows merges continuing through the export window.
