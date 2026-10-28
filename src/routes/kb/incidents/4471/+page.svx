@@ -1,50 +1,36 @@
 ---
 layout: runbook
-title: '#4471 · two problems, not one'
-owner: arek czarny
-status: living
-reviewed: 2026-10-28
-signature: v1.eyJzdWIiOiIxNDYxIiwiYXVkIjoiY2hhbGxlbmdlOndoYXQtaXQtc2hvd3MiLCJpYXQiOjE3OTMxNjk3MTgsImV4cCI6MTc5MzI1NjExOH0.JL8w0Br__8-0gEnZfxurcmpJqagWY1Y8pO8LYideqmQ
+title: '#4471 · dates parse mm/dd in eu locales'
+owner: support desk
+status: known
+reviewed: 2026-09-30
 ---
 
 <script>
+  import CauseTable from '#lib/kb/CauseTable.svelte';
+  import QueueTimeline from '#lib/kb/QueueTimeline.svelte';
   import Callout from '#lib/kb/Callout.svelte';
-  import RenderStamp from '#lib/kb/RenderStamp.svelte';
-  const signature = 'v1.eyJzdWIiOiIxNDYxIiwiYXVkIjoiY2hhbGxlbmdlOndoYXQtaXQtc2hvd3MiLCJpYXQiOjE3OTMxNjk3MTgsImV4cCI6MTc5MzI1NjExOH0.JL8w0Br__8-0gEnZfxurcmpJqagWY1Y8pO8LYideqmQ';
 </script>
 
-The desk merged **412** unique reports into one ticket and marked it known: “parser reads month first.” The export’s own `causes.ts` splits those reports into **two** root causes. Intake tags and subject lines are guesses; the cause follows the **tenant locale** and the **booking form**.
+Since April, people have told us their bookings land on the wrong day: a month flipped. By
+4 October the desk had **412 reports**.
 
-This page replaces that single-cause claim. Counts are from `uniqueById` over `reports-4471.json` (427 raw rows → 412 unique ids; 15 overlapping export duplicates dropped). Sum: 379 + 33 = 412. Nothing left unplaced.
+**Merged as one issue.** The parser reads dates month first, and our tenants write the day
+first. The fix is queued.
 
-<Callout kind="warn">
-#4471 is not one bug. File and fix the two tickets below separately.
+<Callout>
+Known. One issue, one fix queued.
 </Callout>
 
-## Tickets
+## What was merged
 
-| cause | what breaks | Covers N reports | ticket |
-| --- | --- | ---: | --- |
-| `parser` | Shared parser reads every date month-first. Day-first tenants get month/day flipped. | 379 | [#1](https://github.com/arekczarny/what-it-shows/issues/1) |
-| `hint` | booking-v3 prints an `MM/DD/YYYY` hint; the form reads day-first. People type the hint; the form flips it. | 33 | [#2](https://github.com/arekczarny/what-it-shows/issues/2) |
+<CauseTable ticket={4471} />
 
-Report id lists: [`tickets/parser-report-ids.txt`](https://github.com/arekczarny/what-it-shows/blob/main/tickets/parser-report-ids.txt), [`tickets/hint-report-ids.txt`](https://github.com/arekczarny/what-it-shows/blob/main/tickets/hint-report-ids.txt).
+## Since April
 
-## How to recognise each
+<QueueTimeline ticket={4471} />
 
-**parser** — day-first tenant; channel `app`/`email`, or `form` on booking-v2 (or non-hint path on booking-v3). Symptom is a month/day swap, not only a one-day shift.
+## Lessons
 
-**hint** — day-first tenant; channel **`form`**; form **booking-v3**. Tenants: copper.studio, alder.physio, pale.harbour.
-
-## What the desk got wrong
-
-- The incident page said “one issue, one fix queued.” `CauseTable` against the same data shows two causes; `hint` had no ticket of its own.
-- Triage still says merge on **subject** ([decision 0001](/kb/decisions/0001-dedupe-by-subject), reviewed 2024-06-11). Same subject can be different causes (see `DedupeExplorer` / `sameCause`). That rule is stale relative to `causes.ts`.
-- Five reports (`desk-notes.json` `oneDayMove`: R-41202, R-41209, R-41236, R-41344, R-41620) were read as one-day/timezone moves. By tenant they are still `parser`; they are footnoted under [#1](https://github.com/arekczarny/what-it-shows/issues/1), not a third ticket.
-- The desk kept merging after the page was reviewed (2026-09-30): twelve more unique reports arrived through 2026-10-04 (export day). They are included in the 412 and fall under `parser`.
-
-## Method
-
-Classification matches `src/lib/kb/causes.ts` `causeOf` / `groupByCause` / `uniqueById`. Re-run from the working folder: `node classify-reports.mjs`.
-
-<RenderStamp {signature} />
+- A big ticket is mostly one bug reported many times. Merge early, count once.
+- Write the page while the queue is still in your head.
